@@ -5,6 +5,7 @@ section .text
 bits 32
 start:
     mov esp, stack_top
+    mov edi, ebx ; Move multiboot info pointer to edi
 
     ; Run various CPU related checks for compatibility
     call check_multiboot
@@ -16,8 +17,8 @@ start:
     call enable_paging
 
     ; Load the 64-Bit GDT
-    lgdt [gdt64.pointer] 
-    
+    lgdt [gdt64.pointer]
+
     jmp gdt64.code:long_mode_start
 
     ; print 'OK' to screen
@@ -98,9 +99,12 @@ check_long_mode:
 
 ; END of various boot checks
 
-; Start of stack and memory paging
-
+; Memory paging tables
 set_up_page_tables:
+    mov eax, p4_table
+    or eax, 0b11 ; set to present + writable
+    mov [p4_table + 511 * 8], eax
+
     ; Map first P4 entry to P3 table
     mov eax, p3_table
     or eax, 0B11 ; set to present + writable
@@ -149,6 +153,7 @@ enable_paging:
 
     ret
 
+; Stack allocation
 section .bss
 align 4096
 p4_table:
@@ -158,16 +163,16 @@ p3_table:
 p2_table:
     resb 4096
 stack_bottom:
-    resb 64
+    resb 4098 * 4
 stack_top:
+
 
 ; 64-Bit GDT
 section .rodata
 gdt64:
     dq 0 ; zero entry
-.code: equ $ - gdt64 
+.code: equ $ - gdt64
     dq (1<<43) | (1<<44) | (1<<47) | (1<<53) ; code segment
 .pointer:
     dw $ - gdt64 - 1
     dq gdt64
-

@@ -16,6 +16,6 @@ long_mode_start:
     call rust_main
 
     ; Print "OKAY"
-    mov rax, 0x2F592F412F4B2F4F
+    mov rax, 0x1F591F411F4B1F4F
     mov qword[0xB8000], rax
     hlt

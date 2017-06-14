@@ -1,9 +1,15 @@
+ifdef RELEASE
+	profile := release
+else
+	profile := debug
+endif
+
 arch ?= x86_64
 kernel := build/kernel-$(arch).bin
 iso := build/os-$(arch).iso
 
 target ?= $(arch)-rust-os
-rust_os := target/$(target)/debug/librust_os.a
+rust_os := target/$(target)/$(profile)/librust_os.a
 
 linker_script := src/arch/$(arch)/linker.ld
 grub_cfg := src/arch/$(arch)/grub.cfg
@@ -19,7 +25,7 @@ clean:
 	@rm -r build
 
 run: $(iso)
-	@qemu-system-x86_64 -cdrom $(iso)
+	@qemu-system-x86_64 -m 5G -cdrom $(iso)
 
 iso: $(iso)
 
@@ -40,4 +46,8 @@ build/arch/$(arch)/%.o: src/arch/$(arch)/%.asm
 	@nasm -felf64 $< -o $@
 
 kernel:
+ifdef RELEASE
+	@xargo build --release --target $(target)
+else
 	@xargo build --target $(target)
+endif
