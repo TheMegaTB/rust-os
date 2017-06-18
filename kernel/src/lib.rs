@@ -24,6 +24,8 @@ fn print_memory_areas(boot_info: &multiboot2::BootInformation) {
         println!("    start: 0x{:x}, length: 0x{:x}",
             area.base_addr, area.length);
     }
+
+
 }
 
 fn print_elf_section(boot_info: &multiboot2::BootInformation, multiboot_information_address: usize) {
@@ -73,7 +75,8 @@ pub extern fn rust_main(multiboot_information_address: usize) {
     print_memory_areas(boot_info);
     print_elf_section(boot_info, multiboot_information_address);
 
-    loop{}
+    println!("Kernel shutdown initiated. Cya later.");
+    //loop{}
 }
 
 #[lang = "eh_personality"] extern fn eh_personality() {}
